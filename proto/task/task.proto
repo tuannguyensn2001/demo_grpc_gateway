@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package task;
+
+option go_package = "./taskpb";
+
+import "google/api/annotations.proto";
+
+message Task {
+  int32 id = 1;
+  string name = 2;
+}
+
+message GetTasksRequest {
+
+}
+
+message GetTasksResponse {
+  repeated Task tasks = 1;
+}
+
+service TaskService {
+  rpc GetTasks(GetTasksRequest) returns (GetTasksResponse){
+    option(google.api.http) = {
+      get: "/v1/tasks",
+    };
+  }
+}
