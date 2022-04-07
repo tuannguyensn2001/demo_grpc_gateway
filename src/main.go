@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	taskpb "grpc_test/proto/task"
+	taskrepository "grpc_test/src/services/task/repository"
 	"grpc_test/src/services/task/transport"
 	"log"
 	"net"
@@ -18,9 +21,17 @@ func main() {
 		log.Fatal("listen error", err)
 	}
 
+	db, err := sqlx.Connect("mysql", "root:secret@(localhost:3306)/grpc")
+
+	if err != nil {
+		log.Fatal("error database", err)
+	}
+
 	s := grpc.NewServer()
 
-	taskServer := tasktransport.NewTaskServer()
+	taskRepository := taskrepository.NewTaskRepository(db)
+
+	taskServer := tasktransport.NewTaskServer(taskRepository)
 
 	taskpb.RegisterTaskServiceServer(s, taskServer)
 
